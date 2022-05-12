@@ -1,0 +1,21 @@
+<configuration>
+    <springProfile name="default">
+        <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    </springProfile>
+
+<!--    needs this dependency-->
+<!--    <dependency>-->
+<!--        <groupId>net.logstash.logback</groupId>-->
+<!--        <artifactId>logstash-logback-encoder</artifactId>-->
+<!--        <version>7.1.1</version>-->
+<!--    </dependency>-->
+
+    <springProfile name="prod">
+        <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="jsonConsoleAppender"/>
+        </root>
+    </springProfile>
+</configuration>
