@@ -1,8 +1,10 @@
 package de.workshops.bookshelf;
 
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 public class BookSearchParameter {
+    @NotNull
     private String authorName;
     private String title;
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class BookRestController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<Book>> searchBook (@RequestBody BookSearchParameter searchParameter) {
+    public ResponseEntity<List<Book>> searchBook (@RequestBody @Valid BookSearchParameter searchParameter) {
         final var foundBooks = books.stream()
                 .filter(book -> book.getAuthor().startsWith(searchParameter.getAuthorName()))
                 .filter(book -> book.getTitle().startsWith(searchParameter.getTitle()))
