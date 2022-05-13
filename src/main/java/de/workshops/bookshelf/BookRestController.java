@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -55,15 +58,15 @@ public class BookRestController {
     }
 
     @GetMapping("/{isbn}")
-    public ResponseEntity<Book> getByIsbn(@PathVariable String isbn) {
-        final var bookStream = books.stream().filter(book -> book.getIsbn().equals(isbn));
-        final var foundBook = bookStream.findFirst();
+    public ResponseEntity<Book> getByIsbn(@PathVariable String isbn) throws BookException {
+            final var foundBook = books.stream()
+                    .filter(book -> book.getIsbn().equals(isbn))
+                    .findFirst()
+                    .orElseThrow(() -> new BookException("ISBN not valid"));
 
-        if (foundBook.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(foundBook.get());
+            return ResponseEntity.ok(foundBook);
     }
+
     @GetMapping(params = "author")
     public ResponseEntity<List<Book>> getByAuthor(@RequestParam String author) {
         final var foundBooks = books.stream().filter(book -> book.getAuthor().startsWith(author)).toList();
@@ -75,7 +78,7 @@ public class BookRestController {
     }
 
     @PostMapping
-    public ResponseEntity<Book> createBook (@RequestBody Book book, HttpServletRequest request) {
+    public ResponseEntity<Book> createBook (@RequestBody Book book, HttpServletRequest request, HttpServletResponse response) {
         LOGGER.info("Method Info: {}", request.getMethod());
         LOGGER.info("Path Info: {}", request.getRequestURI());
 
@@ -95,5 +98,10 @@ public class BookRestController {
         }
 
         return ResponseEntity.ok(foundBooks);
+    }
+
+    @ExceptionHandler(BookException.class)
+    public ResponseEntity<String> handleBookException(BookException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.I_AM_A_TEAPOT);
     }
 }
