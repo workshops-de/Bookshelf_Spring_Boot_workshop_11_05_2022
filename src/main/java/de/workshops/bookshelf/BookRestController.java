@@ -1,10 +1,7 @@
 package de.workshops.bookshelf;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,11 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -28,48 +22,35 @@ import java.util.List;
 public class BookRestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(BookRestController.class);
 
-    private final ResourceLoader resourceLoader;
-    private final ObjectMapper mapper;
+    private final BookService service;
 
-    private List<Book> books;
-
-    public BookRestController(ResourceLoader resourceLoader, ObjectMapper mapper) {
-        this.resourceLoader = resourceLoader;
-        this.mapper = mapper;
-    }
-
-    @PostConstruct
-    public void init() throws IOException {
-        final var resource = resourceLoader.getResource("classpath:books.json");
-        this.books = mapper.readValue(resource.getInputStream(), new TypeReference<>() {});
+    public BookRestController(BookService service) {
+        this.service = service;
     }
 
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
-        if (books.isEmpty()) {
+        final var allBooks = service.getAllBooks();
+        if (allBooks.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(books);
+        return ResponseEntity.ok(allBooks);
     }
 
     @GetMapping(produces = "plain/text")
     public String getAllBooksAsText() {
-        return books.toString();
+        return service.getAllBooks().toString();
     }
 
     @GetMapping("/{isbn}")
     public ResponseEntity<Book> getByIsbn(@PathVariable String isbn) throws BookException {
-            final var foundBook = books.stream()
-                    .filter(book -> book.getIsbn().equals(isbn))
-                    .findFirst()
-                    .orElseThrow(() -> new BookException("ISBN not valid"));
-
-            return ResponseEntity.ok(foundBook);
+        final var foundBook = service.getBooksByIsbn(isbn);
+        return ResponseEntity.ok(foundBook);
     }
 
     @GetMapping(params = "author")
     public ResponseEntity<List<Book>> getByAuthor(@RequestParam String author) {
-        final var foundBooks = books.stream().filter(book -> book.getAuthor().startsWith(author)).toList();
+        final var foundBooks = service.getBooksByAuthor(author);
         if (foundBooks.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -78,20 +59,17 @@ public class BookRestController {
     }
 
     @PostMapping
-    public ResponseEntity<Book> createBook (@RequestBody Book book, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Book> createBook (@RequestBody Book book, HttpServletRequest request) {
         LOGGER.info("Method Info: {}", request.getMethod());
         LOGGER.info("Path Info: {}", request.getRequestURI());
 
-        books.add(book);
+        service.addBook(book);
         return ResponseEntity.ok(book);
     }
 
     @PostMapping("/search")
     public ResponseEntity<List<Book>> searchBook (@RequestBody @Valid BookSearchParameter searchParameter) {
-        final var foundBooks = books.stream()
-                .filter(book -> book.getAuthor().startsWith(searchParameter.getAuthorName()))
-                .filter(book -> book.getTitle().startsWith(searchParameter.getTitle()))
-                .toList();
+        final var foundBooks = service.searchBooks(searchParameter);
 
         if (foundBooks.isEmpty()) {
             return ResponseEntity.noContent().build();
