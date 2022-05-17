@@ -7,18 +7,19 @@ import java.util.List;
 @Service
 public class BookService {
 
-    private final BookRepository repository;
+//    private final BookJdbcRepository repository;
+    private final BookJpaRepository repository;
 
-    public BookService(BookRepository repository) {
+    public BookService(BookJpaRepository repository) {
         this.repository = repository;
     }
 
     List<Book> getAllBooks() {
-        return repository.getBooks();
+        return repository.findAll();
     }
 
     Book getBooksByIsbn(String isbn) throws BookException {
-        final var books = repository.getBooks();
+        final var books = repository.findAll();
         return books.stream()
                 .filter(book -> book.getIsbn().equals(isbn))
                 .findFirst()
@@ -26,12 +27,12 @@ public class BookService {
     }
 
     List<Book> getBooksByAuthor(String author)  {
-        final var books = repository.getBooks();
+        final var books = repository.findAll();
         return books.stream().filter(book -> book.getAuthor().startsWith(author)).toList();
     }
 
     List<Book> searchBooks(BookSearchParameter searchParameter)  {
-        final var books = repository.getBooks();
+        final var books = repository.findAll();
         return books.stream()
                 .filter(book -> book.getAuthor().startsWith(searchParameter.getAuthorName()))
                 .filter(book -> book.getTitle().startsWith(searchParameter.getTitle()))

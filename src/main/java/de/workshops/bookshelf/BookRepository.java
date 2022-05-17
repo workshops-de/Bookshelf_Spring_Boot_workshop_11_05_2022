@@ -24,7 +24,7 @@ public class BookRepository {
     @PostConstruct
     public void init() throws IOException {
         final var resource = resourceLoader.getResource("classpath:books.json");
-        this.books = mapper.readValue(resource.getInputStream(), new TypeReference<>() {});
+//        this.books = mapper.readValue(resource.getInputStream(), new TypeReference<>() {});
     }
 
     public List<Book> getBooks() {
