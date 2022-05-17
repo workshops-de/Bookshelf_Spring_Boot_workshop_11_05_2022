@@ -1,12 +1,3 @@
-my:
-  own:
-    property: "blabla"
-server:
-  port: 8080
----
-spring:
-  config:
-    activate:
-      on-profile: prod
-server:
-  port: 9091
+global:
+  owner_name: Birgit
+  max_capacity: 1000

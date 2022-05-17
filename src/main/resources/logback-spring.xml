@@ -37,7 +37,7 @@
 
     <!-- For all those not explicitly defined below use this log level: -->
     <root level="INFO">
-        <springProfile name="default, jenkins">
+        <springProfile name="default, jenkins, prod">
             <appender-ref ref="STDOUT"/>
         </springProfile>
         <springProfile name="prod">
