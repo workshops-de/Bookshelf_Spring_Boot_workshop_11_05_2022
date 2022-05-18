@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -21,10 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(properties = "greeting=Hallo du da")
+@WebMvcTest(properties = "greeting=Hallo du da",
+        controllers = BookRestController.class,
+        excludeFilters = {@ComponentScan.Filter(classes = BookshelfSecurity.class, type = FilterType.ASSIGNABLE_TYPE)})
 @TestPropertySource(locations = "classpath:custom.properties")
-@Import(TestConfig.class)
-@ActiveProfiles({"test", "prod"})
+@Import({TestConfig.class})
 class BookRestControllerWithMockMVCTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BookRestControllerWithMockMVCTest.class);
@@ -40,6 +43,7 @@ class BookRestControllerWithMockMVCTest {
     @Value("${greeting}")
     String greeting;
     @Test
+    @WithMockUser
     void getAllBooks() throws Exception {
         LOGGER.error("Greeting: {}", greeting);
         when(bookService.getAllBooks()).thenReturn(List.of(new Book()));

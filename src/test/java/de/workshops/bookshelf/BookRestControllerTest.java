@@ -21,6 +21,6 @@ class BookRestControllerTest {
 
         assertEquals(3, books.size());
 
-        assertThat(books).hasSize(2);
+        assertThat(books).hasSize(3);
     }
 }

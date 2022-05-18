@@ -25,13 +25,14 @@ class BookRestControllerWithRestAssuredTest {
 
     @Test
     void getAllBooksWithRestAssured() {
-        RestAssured.given().
-                log().all().
-                when().
-                get("/books").
-                then().
-                log().all().
-                statusCode(200).
-                body("author[0]", equalTo("Erich Gamma"));
+        RestAssured.given()
+                .auth().basic("admin", "admin")
+                .log().all()
+                .when()
+                .get("/books")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("author[0]", equalTo("Erich Gamma"));
     }
 }

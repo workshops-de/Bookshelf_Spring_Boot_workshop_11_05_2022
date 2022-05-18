@@ -10,7 +10,7 @@ public class BookService {
 //    private final BookJdbcRepository repository;
     private final BookJpaRepository repository;
 
-    public BookService(BookJpaRepository repository) {
+    BookService(BookJpaRepository repository) {
         this.repository = repository;
     }
 
@@ -38,6 +38,7 @@ public class BookService {
                 .filter(book -> book.getTitle().startsWith(searchParameter.getTitle()))
                 .toList();
     }
+
 
     Book addBook (Book newBook) {
         return repository.save(newBook);
